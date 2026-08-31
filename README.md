@@ -81,13 +81,12 @@ This repository contains a hands-on cybersecurity evaluation and security harden
 
 * **Remediation & Hardening (OpenWrt 25.12 `apk` syntax)**:
   ```bash
-  # 1. Update package lists and install SSL modules
+  # 1. Update package lists and install SSL support for LuCI
   apk update
-  apk add luci-ssl uhttpd-mod-ubus
+  apk add luci-ssl
 
-  # 2. Configure uHTTPd to force HTTP-to-HTTPS redirect
+  # 2. Configure uHTTPd to force HTTP-to-HTTPS redirect via UCI
   uci set uhttpd.main.redirect_https='1'
-  uci set uhttpd.main.tls_redirect='1'
   uci commit uhttpd
   /etc/init.d/uhttpd restart
   ```
