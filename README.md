@@ -134,7 +134,7 @@ This repository contains a hands-on cybersecurity evaluation and security harden
 ```text
 .
 ├── README.md                     # Security evaluation report (this file)
-├── images/                       # Evidential screenshots
+└── images/                       # Evidential screenshots
     ├── CR1.1_01_Fail.png
     ├── CR1.1_02_Pass.png
     ├── CR3.1_01_Fail.png
