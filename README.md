@@ -135,10 +135,10 @@ This repository contains a hands-on cybersecurity evaluation and security harden
 .
 ├── README.md                     # Security evaluation report (this file)
 ├── images/                       # Evidential screenshots
-│   ├── CR1.1_01_Fail.png
-│   ├── CR1.1_02_Pass.png
-│   ├── CR3.1_01_Fail.png
-│   ├── CR3.1_02_Pass.png
-│   ├── CR7.1_01_PortScan.png
-│   └── FIRM01_01_Binwalk_Analysis.png
+    ├── CR1.1_01_Fail.png
+    ├── CR1.1_02_Pass.png
+    ├── CR3.1_01_Fail.png
+    ├── CR3.1_02_Pass.png
+    ├── CR7.1_01_PortScan.png
+    └── FIRM01_01_Binwalk_Analysis.png
 ```
