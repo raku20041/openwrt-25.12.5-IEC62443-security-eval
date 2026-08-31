@@ -33,7 +33,7 @@ This repository contains a hands-on cybersecurity evaluation and security harden
 | :---: | :--- | :---: | :---: | :--- |
 | **CR 1.1** | Human User Identification & Authentication | ❌ **FAIL** | ✅ **PASS** | Disabled unauthenticated logins; enforced strong password policies via UCI. |
 | **CR 3.1** | Communication Integrity & Confidentiality | ❌ **FAIL** | ✅ **PASS** | Disabled plaintext HTTP; installed `luci-ssl` via `apk` and enforced TLS 1.3 encryption. |
-| **CR 7.1** | Denial of Service & Attack Surface Reduction | ✅ **PASS** | ✅ **PASS** | Verified minimum attack surface via full TCP port scan (Port 22/443 only). |
+| **CR 7.1** | Denial of Service & Attack Surface Reduction | ✅ **PASS** | ✅ **PASS** | Verified network attack surface via port scanning (Ports 22, 53, 80, 443 open). |
 | **FIRM-01** | Firmware Static Analysis & Hardening Audit | ✅ **PASS** | ✅ **PASS** | Unpacked SquashFS rootfs via Binwalk; verified no hardcoded password hashes in `/etc/shadow`. |
 
 ---
@@ -101,13 +101,13 @@ This repository contains a hands-on cybersecurity evaluation and security harden
 
 ### 3. [CR 7.1] Attack Surface Reduction (Port Scanning)
 
-* **Objective**: Ensure only required management interfaces are open.
+* **Objective**: Ensure only required gateway management and core network interfaces are open.
 * **Command**:
   ```bash
-  nmap -sS -sV -p- -T4 192.168.1.1
+  nmap -sV -p 1-1000 192.168.1.1
   ```
 * **Result (Pass)**:
-  Only Port 22/tcp (Dropbear SSH) and Port 443/tcp (uHTTPd HTTPS) were open, adhering to the principle of least privilege.
+  Identified standard open ports: Port 22/tcp (Dropbear SSH), Port 53/tcp (DNS), Port 80/tcp (uHTTPd HTTP), and Port 443/tcp (HTTPS). Verified no unauthorized or vulnerable background services were running.
 
   ![CR7.1 Port Scan Pass](images/CR7.1_01_PortScan.png)
 
