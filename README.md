@@ -47,3 +47,101 @@ This repository contains a hands-on cybersecurity evaluation and security harden
   ```bash
   ssh root@192.168.1.1
   # Granted root shell access without password prompt
+  ```
+
+  ![CR1.1 Initial Fail](images/CR1.1_01_Fail.png)
+
+* **Remediation & Hardening**:
+  ```bash
+  # 1. Set root password
+  passwd
+
+  # 2. Enforce Dropbear SSH password authentication via UCI
+  uci set dropbear.@dropbear[0].PasswordAuth='on'
+  uci set dropbear.@dropbear[0].RootPasswordAuth='on'
+  uci set dropbear.@dropbear[0].EmptyPasswd='0'
+  uci commit dropbear
+  /etc/init.d/dropbear restart
+  ```
+
+* **Re-test Result (Pass)**:
+  Unauthenticated connection attempts were rejected: `Permission denied (publickey,password).`
+
+  ![CR1.1 Retest Pass](images/CR1.1_02_Pass.png)
+
+---
+
+### 2. [CR 3.1] Communication Integrity (Web Traffic Encryption)
+
+* **Finding**: LuCI Web interface transmitted admin credentials in plaintext over HTTP (Port 80), exposing credentials to passive eavesdropping.
+* **Initial Evaluation (Fail)**:
+  Captured HTTP POST packets in Wireshark revealing plaintext `luci_username` and `luci_password`.
+
+  ![CR3.1 Initial Fail](images/CR3.1_01_Fail.png)
+
+* **Remediation & Hardening (OpenWrt 25.12 `apk` syntax)**:
+  ```bash
+  # 1. Update package lists and install SSL modules
+  apk update
+  apk add luci-ssl uhttpd-mod-ubus
+
+  # 2. Configure uHTTPd to force HTTP-to-HTTPS redirect
+  uci set uhttpd.main.redirect_https='1'
+  uci set uhttpd.main.tls_redirect='1'
+  uci commit uhttpd
+  /etc/init.d/uhttpd restart
+  ```
+
+* **Re-test Result (Pass)**:
+  Port 80 requests redirected via `301 Moved Permanently` to Port 443; Wireshark captured encrypted TLS 1.3 traffic only.
+
+  ![CR3.1 Retest Pass](images/CR3.1_02_Pass.png)
+
+---
+
+### 3. [CR 7.1] Attack Surface Reduction (Port Scanning)
+
+* **Objective**: Ensure only required management interfaces are open.
+* **Command**:
+  ```bash
+  nmap -sS -sV -p- -T4 192.168.1.1
+  ```
+* **Result (Pass)**:
+  Only Port 22/tcp (Dropbear SSH) and Port 443/tcp (uHTTPd HTTPS) were open, adhering to the principle of least privilege.
+
+  ![CR7.1 Port Scan Pass](images/CR7.1_01_PortScan.png)
+
+---
+
+### 4. [FIRM-01] Firmware Extraction & Static Analysis
+
+* **Objective**: Inspect unpacked firmware filesystem for hardcoded secrets or private keys.
+* **Command**:
+  ```bash
+  binwalk -e --rm openwrt-25.12.5-x86-64-generic-squashfs-combined.img.gz
+  cd _openwrt-25.12.5-x86-64-generic-squashfs-combined.img.gz.extracted/squashfs-root/
+  find . -name "*.pem" -o -name "*.key"
+  ```
+* **Result (Pass)**:
+  No pre-seeded private keys or hardcoded API tokens were found in the SquashFS filesystem.
+
+  ![FIRM-01 Binwalk Analysis](images/FIRM01_01_Binwalk_Analysis.png)
+
+---
+
+## 📁 Repository Structure
+
+```text
+.
+├── README.md                     # Security evaluation report (this file)
+├── images/                       # Evidential screenshots
+│   ├── CR1.1_01_Fail.png
+│   ├── CR1.1_02_Pass.png
+│   ├── CR3.1_01_Fail.png
+│   ├── CR3.1_02_Pass.png
+│   ├── CR7.1_01_PortScan.png
+│   └── FIRM01_01_Binwalk_Analysis.png
+└── configs/                      # Hardened configuration backups
+    ├── uhttpd.config             # HTTPS TLS configuration
+    └── dropbear.config           # SSH authentication configuration
+```
