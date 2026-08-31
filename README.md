@@ -141,7 +141,4 @@ This repository contains a hands-on cybersecurity evaluation and security harden
 │   ├── CR3.1_02_Pass.png
 │   ├── CR7.1_01_PortScan.png
 │   └── FIRM01_01_Binwalk_Analysis.png
-└── configs/                      # Hardened configuration backups
-    ├── uhttpd.config             # HTTPS TLS configuration
-    └── dropbear.config           # SSH authentication configuration
 ```
