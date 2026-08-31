@@ -65,7 +65,7 @@ This repository contains a hands-on cybersecurity evaluation and security harden
   ```
 
 * **Re-test Result (Pass)**:
-  Unauthenticated connection attempts were rejected: `Permission denied (publickey,password).`
+  Unauthenticated direct access was blocked; SSH now enforces password authentication and prompts for user credentials (`root@192.168.1.1's password:`).
 
   ![CR1.1 Retest Pass](images/CR1.1_02_Pass.png)
 
