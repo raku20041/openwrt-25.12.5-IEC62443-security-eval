@@ -34,7 +34,7 @@ This repository contains a hands-on cybersecurity evaluation and security harden
 | **CR 1.1** | Human User Identification & Authentication | ❌ **FAIL** | ✅ **PASS** | Disabled unauthenticated logins; enforced strong password policies via UCI. |
 | **CR 3.1** | Communication Integrity & Confidentiality | ❌ **FAIL** | ✅ **PASS** | Disabled plaintext HTTP; installed `luci-ssl` via `apk` and enforced TLS 1.3 encryption. |
 | **CR 7.1** | Denial of Service & Attack Surface Reduction | ✅ **PASS** | ✅ **PASS** | Verified minimum attack surface via full TCP port scan (Port 22/443 only). |
-| **FIRM-01** | Firmware Static Analysis & Hardening Audit | ✅ **PASS** | ✅ **PASS** | Unpacked SquashFS rootfs via Binwalk; verified no hardcoded keys/secrets. |
+| **FIRM-01** | Firmware Static Analysis & Hardening Audit | ✅ **PASS** | ✅ **PASS** | Unpacked SquashFS rootfs via Binwalk; verified no hardcoded password hashes in `/etc/shadow`. |
 
 ---
 
@@ -115,15 +115,15 @@ This repository contains a hands-on cybersecurity evaluation and security harden
 
 ### 4. [FIRM-01] Firmware Extraction & Static Analysis
 
-* **Objective**: Inspect unpacked firmware filesystem for hardcoded secrets or private keys.
+* **Objective**: Inspect unpacked firmware filesystem for hardcoded password hashes or default credentials in `/etc/shadow`.
 * **Command**:
   ```bash
   binwalk -e --rm openwrt-25.12.5-x86-64-generic-squashfs-combined.img.gz
-  cd _openwrt-25.12.5-x86-64-generic-squashfs-combined.img.gz.extracted/squashfs-root/
-  find . -name "*.pem" -o -name "*.key"
+  cd _openwrt-25.12.5-x86-64-generic-squashfs-combined.img.extracted/squashfs-root/
+  cat etc/shadow
   ```
 * **Result (Pass)**:
-  No pre-seeded private keys or hardcoded API tokens were found in the SquashFS filesystem.
+  Verified `root` shadow entry contains no hardcoded password hash (`root:::0:99999:7:::`), confirming the default firmware does not ship with pre-baked credentials.
 
   ![FIRM-01 Binwalk Analysis](images/FIRM01_01_Binwalk_Analysis.png)
 
