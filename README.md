@@ -157,6 +157,20 @@
 
 ---
 
+## 🇪🇺 Regulatory Context & CRA Alignment
+
+This project is primarily mapped to selected **IEC 62443-4-2** technical requirements.
+
+The testing and hardening activities evaluated in this report are also highly relevant to product cybersecurity practices associated with the **EU Cyber Resilience Act (CRA)**, particularly in key domain areas:
+* **Authentication & Access Control**: Verifying secure default credentials and enforcing authentication controls.
+* **Secure Communications**: Preventing cleartext eavesdropping by enforcing encrypted transport channels.
+* **Attack Surface Reduction**: Auditing active services and maintaining a minimal exposed attack surface.
+* **Vulnerability & Firmware Analysis**: Conducting static audits on firmware images to prevent static credential disclosure.
+
+> **Note**: This mapping is provided strictly for technical learning and portfolio demonstration purposes. It does not constitute a formal CRA conformity assessment or legal compliance claim.
+
+---
+
 ## 📁 Repository Structure
 
 ```text
