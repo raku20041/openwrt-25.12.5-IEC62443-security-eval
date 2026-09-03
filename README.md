@@ -1,10 +1,10 @@
 # OpenWrt 25.12.5 Security Evaluation & Hardening Report
 
-> **Disclaimer & Assessment Scope Limit**: This project evaluates selected technical security controls mapped to **IEC 62443-4-2** standards and follows structured documentation principles informed by **ISO/IEC 17025**. This report represents a technical proof-of-concept (PoC) evaluation of specific requirements and does not constitute a full conformity assessment or commercial product certification.
+> **Scope & Purpose**: This repository documents a technical security evaluation and hardening proof-of-concept (PoC) for an OpenWrt 25.12.5 gateway. Testing is conducted against selected IEC 62443-4-2 technical security requirements, with documentation principles informed by ISO/IEC 17025 laboratory reporting standards.
 
 ---
 
-## 📋 Evaluation Overview
+## Evaluation Overview
 
 | Parameter | Details |
 | :--- | :--- |
@@ -14,11 +14,11 @@
 | **Documentation Approach** | Practices informed by ISO/IEC 17025 Laboratory Principles |
 | **Attacker Host** | Kali Linux (`192.168.1.100`) |
 | **Target Host** | OpenWrt Gateway (`192.168.1.1`) |
-| **Evaluation Verdict** | **4/4 Selected Test Cases PASS (Post-Remediation)** |
+| **Final Verdict** | **4/4 Selected Test Cases PASS (Post-Remediation)** |
 
 ---
 
-## 🛠️ Security Toolchain
+## Security Toolchain
 
 * **Network Scanning & Enumeration**: Nmap v7.95
 * **Traffic Analysis & Inspection**: Wireshark v4.2.0
@@ -27,31 +27,31 @@
 
 ---
 
-## 📊 Compliance & Test Case Summary
+## Compliance & Test Case Summary
 
-| Test ID | Mapped Requirement | Description | Pre-Remediation | Post-Remediation | Action & Verification |
+| Test ID | Mapped Requirement | Description | Initial Status | Post-Fix Status | Action & Verification |
 | :---: | :--- | :--- | :---: | :---: | :--- |
-| **TC-CR1.1-01** | **CR 1.1** | Human User Identification & Authentication | ❌ **FAIL** | ✅ **PASS** | Set root password; disabled unauthenticated and empty-password logins via UCI. |
-| **TC-CR3.1-01** | **CR 3.1** | Secure Web Communication & Credential Protection | ❌ **FAIL** | ✅ **PASS** | Installed `luci-ssl` via `apk`; configured HTTP-to-HTTPS (TLS) redirect via uHTTPd. |
-| **TC-NET-01** | **Attack Surface Baseline** | Network Attack Surface Assessment (Supporting CR 7.1) | ✅ **PASS** | ✅ **PASS** | Enumerated open TCP ports (22, 53, 80, 443); verified minimal service exposure. |
-| **TC-FIRM-01** | **FIRM-01** | Firmware Static Credentials Audit | ✅ **PASS** | ✅ **PASS** | Extracted rootfs via Binwalk; verified `/etc/shadow` contains no hardcoded password hashes. |
+| **TC-CR1.1-01** | **CR 1.1** | Human User Identification & Authentication | FAIL | PASS | Enforced root password; disabled unauthenticated & empty-password logins via UCI. |
+| **TC-CR3.1-01** | **CR 3.1** | Secure Web Communication & Credential Protection | FAIL | PASS | Installed `luci-ssl` via `apk`; enforced HTTP-to-HTTPS (TLS) redirect via uHTTPd. |
+| **TC-NET-01** | **Attack Surface Baseline** | Network Attack Surface Assessment (Supporting CR 7.1) | PASS | PASS | Enumerated active TCP ports (22, 53, 80, 443); verified minimal service exposure. |
+| **TC-FIRM-01** | **FIRM-01** | Firmware Static Credentials Audit | PASS | PASS | Extracted rootfs via Binwalk; verified `/etc/shadow` contains no hardcoded password hashes. |
 
 ---
 
-## 🔍 ISO/IEC 17025 Structured Test Cases
+## Detailed Test Cases (ISO/IEC 17025 Structure)
 
 ### 1. [TC-CR1.1-01] Human User Identification & Authentication
 
 * **Requirement**: IEC 62443-4-2 CR 1.1 — Human user identification and authentication.
-* **Objective**: Verify that access to management interfaces (SSH/LuCI) requires explicit user authentication and blocks unauthenticated access.
+* **Objective**: Verify that management interfaces (SSH/LuCI) require explicit user authentication and block unauthenticated access.
 * **Preconditions**: OpenWrt 25.12.5 factory default configuration.
 
-#### Initial Evaluation (Fail)
+#### Initial Evaluation
 * **Procedure**: Attempt unauthenticated SSH connection to the target device.
   ```bash
-  ssh root@192.168.1.1
+  $ ssh root@192.168.1.1
   ```
-* **Observed Result**: Granted immediate `root` shell access without requesting a password.
+* **Observed Result**: Granted immediate `root` shell access without requesting a password. **[FAIL]**
 
 ![CR1.1 Initial Fail](images/CR1.1_01_Fail.png)
 
@@ -69,12 +69,12 @@
   /etc/init.d/dropbear restart
   ```
 
-#### Re-test Verification (Pass)
+#### Re-test Verification
 * **Procedure**: Re-execute SSH login attempt from the attacker host.
   ```bash
-  ssh root@192.168.1.1
+  $ ssh root@192.168.1.1
   ```
-* **Observed Result**: Direct unauthenticated login rejected. System prompts for user credential password (`root@192.168.1.1's password:`).
+* **Observed Result**: Direct unauthenticated login rejected. System prompts for user credential password (`root@192.168.1.1's password:`). **[PASS]**
 
 ![CR1.1 Retest Pass](images/CR1.1_02_Pass.png)
 
@@ -86,9 +86,9 @@
 * **Objective**: Ensure web management traffic (LuCI) is protected against plaintext eavesdropping through encrypted HTTPS/TLS communication.
 * **Preconditions**: Default LuCI Web interface operating over unencrypted HTTP (Port 80).
 
-#### Initial Evaluation (Fail)
+#### Initial Evaluation
 * **Procedure**: Intercept LuCI login traffic on Port 80 using Wireshark.
-* **Observed Result**: Plaintext HTTP POST request captured containing sensitive authentication parameters (`luci_username` and `luci_password`).
+* **Observed Result**: Plaintext HTTP POST request captured containing sensitive authentication parameters (`luci_username` and `luci_password`). **[FAIL]**
 
 ![CR3.1 Initial Fail](images/CR3.1_01_Fail.png)
 
@@ -105,9 +105,9 @@
   /etc/init.d/uhttpd restart
   ```
 
-#### Re-test Verification (Pass)
+#### Re-test Verification
 * **Procedure**: Intercept network traffic during Web login access and verify TLS redirection.
-* **Observed Result**: HTTP requests to Port 80 are redirected (`301 Moved Permanently`) to HTTPS Port 443. Traffic inspection confirms encrypted TLS communication and prevents credential exposure.
+* **Observed Result**: HTTP requests to Port 80 are redirected (`301 Moved Permanently`) to HTTPS Port 443. Traffic inspection confirms encrypted TLS communication and prevents credential exposure. **[PASS]**
 
 ![CR3.1 Retest Pass](images/CR3.1_02_Pass.png)
 
@@ -122,16 +122,15 @@
 #### Evaluation & Audit Procedure
 * **Command**:
   ```bash
-  nmap -sV -p 1-1000 192.168.1.1
+  $ nmap -sV -p 1-1000 192.168.1.1
   ```
-* **Observed Result (Pass)**:
-  Enumerated 4 expected active TCP services:
+* **Observed Result**: Enumerated 4 expected active TCP services:
   * `22/tcp` — open (Dropbear SSH 2.0)
   * `53/tcp` — open (dnsmasq / Cloudflare public DNS proxy)
   * `80/tcp` — open (OpenWrt uHTTPd HTTP)
   * `443/tcp` — open (OpenWrt uHTTPd HTTPS / SSL)
   
-  No unintended background ports or unverified services were identified within the scanned port range.
+  No unintended background ports or unverified services were identified within the scanned port range. **[PASS]**
 
 ![CR7.1 Port Scan Pass](images/CR7.1_01_PortScan.png)
 
@@ -146,37 +145,35 @@
 #### Evaluation & Audit Procedure
 * **Command**:
   ```bash
-  binwalk -e --rm openwrt-25.12.5-x86-64-generic-squashfs-combined.img.gz
-  cd _openwrt-25.12.5-x86-64-generic-squashfs-combined.img.extracted/squashfs-root/
-  cat etc/shadow
+  $ binwalk -e --rm openwrt-25.12.5-x86-64-generic-squashfs-combined.img.gz
+  $ cd _openwrt-25.12.5-x86-64-generic-squashfs-combined.img.extracted/squashfs-root/
+  $ cat etc/shadow
   ```
-* **Observed Result (Pass)**:
-  `cat etc/shadow` output confirmed the `root` account entry contains no pre-baked password hash (`root:::0:99999:7:::`), verifying that the default firmware filesystem image does not ship with hardcoded shadow credentials.
+* **Observed Result**:
+  `cat etc/shadow` output confirmed the `root` account entry contains no pre-baked password hash (`root:::0:99999:7:::`), verifying that the default firmware filesystem image does not ship with hardcoded shadow credentials. **[PASS]**
 
 ![FIRM-01 Binwalk Analysis](images/FIRM01_01_Binwalk_Analysis.png)
 
 ---
 
-## 🇪🇺 Regulatory Context & CRA Alignment
+## Regulatory Context & CRA Alignment
 
 This project is primarily mapped to selected **IEC 62443-4-2** technical requirements.
 
-The testing and hardening activities evaluated in this report are also highly relevant to product cybersecurity practices associated with the **EU Cyber Resilience Act (CRA)**, particularly in key domain areas:
+The testing and hardening activities evaluated in this report align with product cybersecurity practices required by the **EU Cyber Resilience Act (CRA)**, specifically:
 * **Authentication & Access Control**: Verifying secure default credentials and enforcing authentication controls.
 * **Secure Communications**: Preventing cleartext eavesdropping by enforcing encrypted transport channels.
 * **Attack Surface Reduction**: Auditing active services and maintaining a minimal exposed attack surface.
 * **Vulnerability & Firmware Analysis**: Conducting static audits on firmware images to prevent static credential disclosure.
 
-> **Note**: This mapping is provided strictly for technical learning and portfolio demonstration purposes. It does not constitute a formal CRA conformity assessment or legal compliance claim.
-
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```text
 .
-├── README.md                     # Technical Evaluation & Hardening Report
-└── images/                       # Evidential screenshots matching test cases
+├── README.md                      # Technical Evaluation & Hardening Report
+└── images/                        # Evidential screenshots matching test cases
     ├── CR1.1_01_Fail.png
     ├── CR1.1_02_Pass.png
     ├── CR3.1_01_Fail.png
