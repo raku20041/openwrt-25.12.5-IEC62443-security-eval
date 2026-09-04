@@ -14,7 +14,7 @@
 | **Documentation Approach** | Practices informed by ISO/IEC 17025 Laboratory Principles |
 | **Attacker Host** | Kali Linux (`192.168.1.100`) |
 | **Target Host** | OpenWrt Gateway (`192.168.1.1`) |
-| **Final Verdict** | **4/4 Selected Test Cases PASS (Post-Remediation)** |
+| **Test Result** | 4/4 selected test cases passed after remediation |
 
 ---
 
@@ -33,7 +33,7 @@
 | :---: | :--- | :--- | :---: | :---: | :--- |
 | **TC-CR1.1-01** | **CR 1.1** | Human User Identification & Authentication | FAIL | PASS | Enforced root password; disabled unauthenticated & empty-password logins via UCI. |
 | **TC-CR3.1-01** | **CR 3.1** | Secure Web Communication & Credential Protection | FAIL | PASS | Installed `luci-ssl` via `apk`; enforced HTTP-to-HTTPS (TLS) redirect via uHTTPd. |
-| **TC-NET-01** | **Attack Surface Baseline** | Network Attack Surface Assessment (Supporting CR 7.1) | PASS | PASS | Enumerated active TCP ports (22, 53, 80, 443); verified minimal service exposure. |
+| **TC-NET-01** | **Attack Surface Baseline** | Network Attack Surface Assessment (Supporting CR 7.1) | PASS | PASS | Enumerated active TCP ports (22, 53, 80, 443); identified no unexpected listening services. |
 | **TC-FIRM-01** | **FIRM-01** | Firmware Static Credentials Audit | PASS | PASS | Extracted rootfs via Binwalk; verified `/etc/shadow` contains no hardcoded password hashes. |
 
 ---
@@ -126,11 +126,11 @@
   ```
 * **Observed Result**: Enumerated 4 expected active TCP services:
   * `22/tcp` — open (Dropbear SSH 2.0)
-  * `53/tcp` — open (dnsmasq / Cloudflare public DNS proxy)
+  * `53/tcp` — open (dnsmasq)
   * `80/tcp` — open (OpenWrt uHTTPd HTTP)
   * `443/tcp` — open (OpenWrt uHTTPd HTTPS / SSL)
   
-  No unintended background ports or unverified services were identified within the scanned port range. **[PASS]**
+  Enumerated active TCP services and identified no unexpected listening services within the scanned port range. **[PASS]**
 
 ![CR7.1 Port Scan Pass](images/CR7.1_01_PortScan.png)
 
@@ -160,7 +160,7 @@
 
 This project is primarily mapped to selected **IEC 62443-4-2** technical requirements.
 
-The testing and hardening activities evaluated in this report align with product cybersecurity practices required by the **EU Cyber Resilience Act (CRA)**, specifically:
+The testing and hardening activities documented in this report are relevant to product cybersecurity practices addressed by the **EU Cyber Resilience Act (CRA)**, particularly in the following areas:
 * **Authentication & Access Control**: Verifying secure default credentials and enforcing authentication controls.
 * **Secure Communications**: Preventing cleartext eavesdropping by enforcing encrypted transport channels.
 * **Attack Surface Reduction**: Auditing active services and maintaining a minimal exposed attack surface.
